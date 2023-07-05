@@ -11,17 +11,33 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 @app.route('/api/stats', methods=['GET'])
 def getJwt():
     story_url = request.args.get('story_url')
-    if not "medium.com" in story_url:
+    if not "http" in story_url:
         return make_response(jsonify(msg="Not authorized"), 403)
     else:
         c = requests.get(story_url).content.decode("utf-8")
-        c = c.split("clapCount\":")[1]
-        endIndex = c.index(",")
-        claps = int(c[0:endIndex])
-        c = c.split("responsesCount\":")[1]
-        endIndex = c.index(",")
-        comments = int(c[0:endIndex])
-        return jsonify(comments=comments, claps=claps)
+
+        try:        
+            a = c.split("clapCount\":")[1]
+            endIndex = a.index(",")
+            claps = int(a[0:endIndex])
+        except Exception:
+            claps = 0  
+
+        try:   
+            b = c.split("voterCount\":")[1]
+            endIndex = b.index(",")
+            voterCount = int(b[0:endIndex])
+        except Exception:
+            voterCount = 0          
+        
+        try:
+            d = c.split("\"PostResponses\",\"count\":")[1]
+            endIndex = d.index("}")
+            comments = int(d[0:endIndex])
+        except Exception:
+            comments = 0           
+
+        return jsonify(claps=claps, voterCount=voterCount, comments=comments)
 
 
 api = Api(app)
